@@ -32,7 +32,7 @@ jobs:
       env:
         KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
       with:
-        args: set image --record kubernetesdeploy/nginx nginx=macagauna117/devops-interview-workflow:${{ github.sha }}
+        args: set image --record deployment/nginx  nginx=macagauna117/devops-interview-workflow:${{ github.sha }}
     - name: verify deployment
       uses: steebchen/kubectl@master
       env:
