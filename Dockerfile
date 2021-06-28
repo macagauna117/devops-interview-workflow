@@ -4,4 +4,4 @@ WORKDIR /nginx
 
 COPY . .
 
-
+EXPOSE 2000
