@@ -1,3 +1,10 @@
+
+          args: |
+            kubectl set image deployment $K8S_DEPLOYMENT -n web-server nginx=macagauna117/devops-interview-workflow:${{ github.sha }}
+            kubectl rollout status deployment/$K8S_DEPLOYMENT -n web-server
+
+
+
 on: push
 
 env:
@@ -6,29 +13,37 @@ env:
   K8S_DEPLOYMENT: nginx
 
 
+name: deploy
 jobs:
   build-and-push:
     name: build and push image
     runs-on: ubuntu-latest
-    
     steps:
-      - name: build and push to docker
-        uses: actions/checkout@v2
-      - name: Push to Docker Hub
-        uses: docker/build-push-action@v2
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-          repository: macagauna117/devops-interview-workflow
-          tag_with_ref: true
-          tag_with_sha: true
-          tags: ${{ github.sha }}
-
-      - name: deploy to cluster
-        uses: steebchen/kubectl@master
-        env:
-          KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
-        with:
-          args: |
-            kubectl set image deployment $K8S_DEPLOYMENT -n web-server nginx=macagauna117/devops-interview-workflow:${{ github.sha }}
-            kubectl rollout status deployment/$K8S_DEPLOYMENT -n web-server
+    - uses: actions/checkout@master
+    - name: build and push to docker
+      uses: docker/build-push-action@v2
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+        repository: macagauna117/devops-interview-workflow
+        tag_with_ref: true
+        tag_with_sha: true
+        tags: ${{ github.sha }}
+  deploy-to-cluster:
+    name: deploy to cluster
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    steps:
+    - name: deploy to cluster
+      uses: steebchen/kubectl@master
+      env:
+        KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
+      with:
+        args: set image --record $K8S_DEPLOYMENT -n web-server nginx=macagauna117/devops-interview-workflow:${{ github.sha }}
+    - name: verify deployment
+      uses: steebchen/kubectl@master
+      env:
+        KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
+        KUBECTL_VERSION: "1.20"
+      with:
+        args: '"rollout status nginx"'
