@@ -39,11 +39,11 @@ jobs:
       env:
         KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
       with:
-        args: set image --record $K8S_DEPLOYMENT -n web-server nginx=macagauna117/devops-interview-workflow:${{ github.sha }}
+        args: set image --record kubernetesdeploy/nginx nginx=macagauna117/devops-interview-workflow:${{ github.sha }}
     - name: verify deployment
       uses: steebchen/kubectl@master
       env:
         KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
         KUBECTL_VERSION: "1.20"
       with:
-        args: '"rollout status nginx"'
+        args: '"rollout status kubernetesdeploy/nginx"'
